@@ -1,36 +1,29 @@
-/* =========================
-   Professional College Website
-========================= */
-
-/* Global Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* ===== Global Styles ===== */
+html, body {
+  height: 100%;
 }
 
 body {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
   font-family: "Segoe UI", Tahoma, sans-serif;
   background: #f4f7fb;
   color: #1f2a44;
-  line-height: 1.7;
 }
 
-/* Container */
+/* ===== Container ===== */
 .container {
   width: 90%;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-/* Header */
+/* ===== Header ===== */
 header {
   background: #0b2a47;
   color: white;
   padding: 20px 0;
-  position: sticky;
-  top: 0;
-  z-index: 100;
 }
 
 header h1 {
@@ -57,153 +50,25 @@ nav a:hover {
   background: #1d4a7b;
 }
 
-/* Hero Section */
-.hero {
-  background: #fff;
-  padding: 60px 0;
-  border-bottom: 1px solid #e2e8f0;
+/* ===== Main Content ===== */
+main {
+  flex: 1; /* This makes the footer stick at the bottom */
 }
 
-.hero h2 {
-  font-size: 32px;
-  margin-bottom: 15px;
-}
-
-.hero p {
-  font-size: 18px;
-  margin-bottom: 20px;
-}
-
-.btn {
-  display: inline-block;
-  background: #0b2a47;
-  color: white;
-  padding: 12px 18px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.btn:hover {
-  background: #1d4a7b;
-}
-
-/* General Section */
 section {
   padding: 40px 0;
 }
 
-/* Tabs */
-.tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.tabs button {
-  padding: 10px 14px;
-  border: 1px solid #cbd5e1;
-  background: #fff;
-  cursor: pointer;
-  border-radius: 8px;
-  font-weight: 600;
-}
-
-.tabs button:hover {
-  background: #f2f6fb;
-}
-
-.program {
-  display: none;
-  background: #fff;
-  padding: 20px;
-  border-left: 4px solid #0b2a47;
-  border-radius: 8px;
-}
-
-/* Search Input */
-#search {
-  width: 100%;
-  max-width: 400px;
-  padding: 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-/* List Styling */
-#facultyList li,
-#announcementList li {
-  list-style: none;
-  background: #fff;
-  padding: 15px;
-  margin-bottom: 10px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-}
-
-/* Contact Form */
-form {
-  background: #fff;
-  padding: 25px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  max-width: 520px;
-}
-
-form label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
-form input,
-form textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  background: #f7fafc;
-}
-
-form button {
-  background: #0b2a47;
-  color: white;
-  padding: 12px 18px;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-form button:hover {
-  background: #1d4a7b;
-}
-
-/* Validation Messages */
-#error {
-  margin-top: 10px;
-  font-weight: 600;
-}
-
-#error.error {
-  color: #b91c1c;
-}
-
-#error.success {
-  color: #166534;
-}
-
-/* Footer */
+/* ===== Footer ===== */
 footer {
   background: #0b2a47;
   color: white;
   padding: 20px 0;
   text-align: center;
+  margin-top: auto;
 }
 
-/* Responsive */
+/* ===== Responsive ===== */
 @media (max-width: 768px) {
   nav {
     justify-content: center;

@@ -1,96 +1,71 @@
-/* ====== ALL-IN-ONE JS ====== */
+// =====================
+// ANNOUNCEMENTS MODULE
+// =====================
 
-/* ===== Programs Tabs ===== */
-function showProgram(id) {
-  const programs = document.querySelectorAll(".program");
-
-  programs.forEach(p => {
-    p.style.display = "none";
-  });
-
-  document.getElementById(id).style.display = "block";
-}
-
-/* Automatically show first program */
-document.addEventListener("DOMContentLoaded", () => {
-  const firstProgram = document.querySelector(".program");
-  if (firstProgram) {
-    firstProgram.style.display = "block";
-  }
-});
-
-
-/* ===== Faculty Search ===== */
-const searchInput = document.getElementById("search");
-const faculty = document.querySelectorAll("#facultyList li");
-
-if (searchInput) {
-  searchInput.addEventListener("input", () => {
-    const value = searchInput.value.toLowerCase();
-
-    faculty.forEach(item => {
-      const text = item.textContent.toLowerCase();
-      item.style.display = text.includes(value) ? "block" : "none";
-    });
-  });
-}
-
-
-/* ===== Announcements ===== */
 const announcements = [
-  "Enrollment opens May 10",
-  "IT Week starts June 5",
-  "Final exams schedule released",
-  "New Lab Orientation on June 15",
-  "Scholarship Application Deadline: July 20"
+  {
+    title: "New Semester Enrollment",
+    message: "Enrollment starts on July 1. Please prepare your requirements.",
+    date: "2026-07-01"
+  },
+  {
+    title: "Guest Lecture: Cybersecurity",
+    message: "Join our guest lecture this Friday at 2PM in Room 204.",
+    date: "2026-06-25"
+  },
+  {
+    title: "Programming Contest",
+    message: "Coding contest for CCS students on June 30. Register now!",
+    date: "2026-06-30"
+  }
 ];
 
-const list = document.getElementById("announcementList");
+function renderAnnouncements(filter = "") {
+  const list = document.getElementById("announcementList");
+  if (!list) return;
 
-if (list) {
-  announcements.forEach(item => {
+  list.innerHTML = "";
+
+  const filtered = announcements.filter(a =>
+    a.title.toLowerCase().includes(filter.toLowerCase()) ||
+    a.message.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  filtered.forEach(a => {
     const li = document.createElement("li");
-    li.textContent = item;
+    li.classList.add("announcement-item");
+
+    li.innerHTML = `
+      <h3>${a.title}</h3>
+      <p>${a.message}</p>
+      <span>${a.date}</span>
+    `;
     list.appendChild(li);
   });
 }
 
-
-/* ===== Contact Form Validation ===== */
-const form = document.getElementById("contactForm");
-
-if (form) {
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
-
-    const name = document.getElementById("name").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const message = document.getElementById("message").value.trim();
-    const error = document.getElementById("error");
-
-    error.className = "";
-    error.textContent = "";
-
-    if (!name || !email || !message) {
-      error.textContent = "All fields are required. Please complete the form.";
-      error.className = "error";
-      return;
-    }
-
-    if (!email.includes("@") || !email.includes(".")) {
-      error.textContent = "Please enter a valid email address.";
-      error.className = "error";
-      return;
-    }
-
-    if (message.length < 10) {
-      error.textContent = "Message must be at least 10 characters long.";
-      error.className = "error";
-      return;
-    }
-
-    error.textContent = "Thank you! Your message has been sent successfully.";
-    error.className = "success";
-    this.reset();
+// Search
+const searchInput = document.getElementById("announcementSearch");
+if (searchInput) {
+  searchInput.addEventListener("input", (e) => {
+    renderAnnouncements(e.target.value);
   });
 }
+
+// Add Announcement (Admin Button)
+const addBtn = document.getElementById("addAnnouncementBtn");
+if (addBtn) {
+  addBtn.addEventListener("click", () => {
+    const title = prompt("Enter announcement title:");
+    const message = prompt("Enter announcement message:");
+    const date = new Date().toISOString().slice(0, 10);
+
+    if (title && message) {
+      announcements.unshift({ title, message, date });
+      renderAnnouncements();
+    }
+  });
+}
+
+// Initial render
+renderAnnouncements();

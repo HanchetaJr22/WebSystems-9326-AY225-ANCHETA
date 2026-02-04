@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>CCS | Announcements</title>
+  <title>Announcements | College of Computer Studies</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -21,14 +21,18 @@
   </div>
 </header>
 
-<section>
+<section id="announcements">
   <div class="container">
-    <h2>Announcements</h2>
+    <h2>Announcements / Academic Events</h2>
+
+    <div class="announcement-top">
+      <input type="text" id="announcementSearch" placeholder="Search announcements..." />
+      <button class="btn" id="addAnnouncementBtn">Add Announcement</button>
+    </div>
+
     <ul id="announcementList"></ul>
   </div>
 </section>
-
-<script src="js/main.js"></script>
 
 <footer>
   <div class="container">
@@ -36,5 +40,6 @@
   </div>
 </footer>
 
+<script src="js/main.js"></script>
 </body>
 </html>
