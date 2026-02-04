@@ -1,8 +1,8 @@
 /* =========================
-   Professional Academic Design
+   Professional College Website
 ========================= */
 
-/* Global */
+/* Global Reset */
 * {
   margin: 0;
   padding: 0;
@@ -11,11 +11,12 @@
 
 body {
   font-family: "Segoe UI", Tahoma, sans-serif;
-  background: #f3f6fb;
+  background: #f4f7fb;
   color: #1f2a44;
   line-height: 1.7;
 }
 
+/* Container */
 .container {
   width: 90%;
   max-width: 1200px;
@@ -33,9 +34,9 @@ header {
 }
 
 header h1 {
+  display: inline-block;
   font-size: 24px;
   letter-spacing: 1px;
-  display: inline-block;
 }
 
 nav {
@@ -56,9 +57,9 @@ nav a:hover {
   background: #1d4a7b;
 }
 
-/* Hero */
+/* Hero Section */
 .hero {
-  background: #ffffff;
+  background: #fff;
   padding: 60px 0;
   border-bottom: 1px solid #e2e8f0;
 }
@@ -87,7 +88,7 @@ nav a:hover {
   background: #1d4a7b;
 }
 
-/* Sections */
+/* General Section */
 section {
   padding: 40px 0;
 }
@@ -114,13 +115,13 @@ section {
 
 .program {
   display: none;
-  background: white;
+  background: #fff;
   padding: 20px;
   border-left: 4px solid #0b2a47;
   border-radius: 8px;
 }
 
-/* Faculty Search */
+/* Search Input */
 #search {
   width: 100%;
   max-width: 400px;
@@ -130,10 +131,11 @@ section {
   margin-bottom: 20px;
 }
 
+/* List Styling */
 #facultyList li,
 #announcementList li {
   list-style: none;
-  background: white;
+  background: #fff;
   padding: 15px;
   margin-bottom: 10px;
   border: 1px solid #e2e8f0;
@@ -142,7 +144,7 @@ section {
 
 /* Contact Form */
 form {
-  background: white;
+  background: #fff;
   padding: 25px;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
@@ -179,6 +181,7 @@ form button:hover {
   background: #1d4a7b;
 }
 
+/* Validation Messages */
 #error {
   margin-top: 10px;
   font-weight: 600;
