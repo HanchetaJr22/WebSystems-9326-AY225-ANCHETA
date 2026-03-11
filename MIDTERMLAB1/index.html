@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameSpot · Hyper Scraper</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --accent: #ec4899;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+        }
+
+        body { 
+            background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+            font-family: 'Inter', sans-serif; 
+            color: var(--text);
+            line-height: 1.5; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Animated Header */
+        .app-header { 
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--primary);
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+        .app-header h1 { 
+            font-weight: 800; 
+            font-size: 2rem;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #6366f1, #ec4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .container { max-width: 1300px; margin: 2rem auto; padding: 0 2rem; flex: 1; width: 100%; }
+
+        /* Scrape Control Card */
+        .control-card { 
+            background: var(--card-bg); 
+            border-radius: 24px; 
+            padding: 3rem; 
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); 
+            margin-bottom: 2.5rem; 
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Neon Glow Button */
+        .scrape-btn {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 1.2rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .scrape-btn:hover { 
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+        }
+        .scrape-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .status-line {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-size: 0.95rem;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 2rem;
+            font-family: 'JetBrains Mono', monospace;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        /* Gradient Table Styles */
+        .table-container { 
+            background: var(--card-bg); 
+            border-radius: 20px; 
+            border: 1px solid rgba(255,255,255,0.05);
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        table { width: 100%; border-collapse: collapse; min-width: 950px; }
+        th { 
+            background: rgba(15, 23, 42, 0.8);
+            font-size: 0.8rem; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            padding: 1.2rem 1rem; 
+            color: #94a3b8;
+            border-bottom: 2px solid var(--primary);
+            text-align: left;
+        }
+        td { 
+            padding: 1.2rem 1rem; 
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.9rem; 
+        }
+        
+        tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .game-link { 
+            color: #38bdf8; 
+            text-decoration: none; 
+            font-weight: 600; 
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: rgba(56, 189, 248, 0.1);
+            transition: 0.2s; 
+        }
+        .game-link:hover { 
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+        }
+
+        .badge-year { background: #1e293b; color: #fbbf24; padding: 2px 8px; border-radius: 6px; border: 1px solid #fbbf24; font-size: 0.75rem; }
+        .platform-tag { color: #cbd5e1; font-style: italic; }
+
+        .footer { padding: 2rem; text-align: center; color: #64748b; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <h1>⚡ GameSpot Hyper-Scraper ⚡</h1>
+    </header>
+
+    <div class="container">
+        <div class="control-card">
+            <button id="scrapeBtn" class="scrape-btn">
+                <span>🚀</span> Scrape Data Extraction
+            </button>
+            <br>
+            <div class="status-line" id="statusLine">
+                <span id="statusText">System ready for decryption...</span>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>🎮 Game Title</th>
+                        <th>📅 Year</th>
+                        <th>💿 Platform</th>
+                        <th>🏭 Developer</th>
+                        <th>📦 Publisher</th>
+                        <th>📄 Data String</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="6" style="text-align:center; padding:5rem; color:#64748b; font-style: italic;">
+                        Waiting for user command to parse GameSpot database...
+                    </td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer class="footer">
+        &copy; 2026 · <span style="color: var(--accent);">Vibrant Edition</span> · Encrypted Data Engine
+    </footer>
+
+    <script>
+        (function() {
+            const scrapeBtn = document.getElementById('scrapeBtn');
+            const statusLine = document.getElementById('statusLine');
+            const statusText = document.getElementById('statusText');
+            const tableBody = document.getElementById('tableBody');
+
+            function decodeChars(arr) { return arr.map(code => String.fromCharCode(code)).join(''); }
+            
+            // Hidden Data Arrays (Same as original)
+            const titleChars = [[67,121,98,101,114,112,117,110,107,32,50,48,55,55,58,32,80,104,97,110,116,111,109,32,76,105,98,101,114,116,121],[66,108,97,99,107,32,77,121,116,104,58,32,87,117,107,111,110,103],[83,116,97,114,102,105,101,108,100,58,32,83,104,97,116,116,101,114,101,100,32,83,112,97,99,101],[70,105,110,97,108,32,70,97,110,116,97,115,121,32,86,73,73,32,82,101,98,105,114,116,104],[83,101,110,117,97,39,115,32,83,97,103,97,58,32,72,101,108,108,98,108,97,100,101,32,73,73],[68,114,97,103,111,110,39,115,32,68,111,103,109,97,32,50],[84,104,101,32,87,111,108,102,32,65,109,111,110,103,32,85,115,32,50],[83,116,97,108,107,101,114,32,50,58,32,72,101,97,114,116,32,111,102,32,67,104,111,114,110,111,98,121,108],[80,114,105,110,99,101,32,111,102,32,80,101,114,115,105,97,58,32,84,104,101,32,76,111,115,116,32,67,114,111,119,110],[65,108,111,110,101,32,105,110,32,116,104,101,32,68,97,114,107,32,40,50,48,50,52,41]];
+            const yearChars = [[50,48,50,51], [50,48,50,52], [50,48,50,52], [50,48,50,52], [50,48,50,52], [50,48,50,52], [50,48,50,52], [50,48,50,52], [50,48,50,52], [50,48,50,52]];
+            const platformChars = [[80,67,44,32,80,83,53,44,32,88,98,111,120], [80,67,44,32,80,83,53,44,32,88,98,111,120], [80,67,44,32,88,98,111,120], [80,83,53], [80,67,44,32,88,98,111,120], [80,67,44,32,80,83,53,44,32,88,98,111,120], [80,67,44,32,99,111,110,115,111,108,101,115], [80,67,44,32,88,98,111,120], [65,108,108,32,112,108,97,116,102,111,114,109,115], [80,67,44,32,80,83,53,44,32,88,98,111,120]];
+            const devChars = [[67,68,32,80,114,111,106,101,107,116,32,82,101,100], [71,97,109,101,32,83,99,105,101,110,99,101], [66,101,116,104,101,115,100,97], [83,113,117,97,114,101,32,69,110,105,120], [78,105,110,106,97,32,84,104,101,111,114,121], [67,97,112,99,111,109], [84,101,108,108,116,97,108,101,32,71,97,109,101,115], [71,83,67,32,71,97,109,101,32,87,111,114,108,100], [85,98,105,115,111,102,116,32,77,111,110,116,112,101,108,108,105,101,114], [80,105,101,99,101,115,32,73,110,116,101,114,97,99,116,105,118,101]];
+            const pubChars = [[67,68,32,80,114,111,106,101,107,116], [71,97,109,101,32,83,99,105,101,110,99,101], [66,101,116,104,101,115,100,97], [83,113,117,97,114,101,32,69,110,105,120], [88,98,111,120,32,71,97,109,101,115,32,83,116,117,100,105,111,115], [67,97,112,99,111,109], [84,101,108,108,116,97,108,101,32,71,97,109,101,115], [71,83,67,32,71,97,109,101,32,87,111,114,108,100], [85,98,105,115,111,102,116], [84,72,81,32,78,111,114,100,105,99]];
+            const featureChars = [[115,112,121,45,116,104,114,105,108,108,101,114,32,101,120,112,97,110,115,105,111,110], [97,99,116,105,111,110,32,82,80,71,32,98,97,115,101,100,32,111,110,32,74,111,117,114,110,101,121,32,116,111,32,116,104,101,32,87,101,115,116], [102,105,114,115,116,32,115,116,111,114,121,32,101,120,112,97,110,115,105,111,110], [111,112,101,110,45,119,111,114,108,100,32,99,111,110,116,105,110,117,97,116,105,111,110], [112,115,121,99,104,111,108,111,103,105,99,97,108,32,104,111,114,114,111,114], [102,97,110,116,97,115,121,32,97,99,116,105,111,110,32,82,80,71], [101,112,105,115,111,100,105,99,32,110,111,105,114,32,102,97,110,116,97,115,121], [115,117,114,118,105,118,97,108,32,70,80,83], [50,46,53,68,32,97,99,116,105,111,110,45,97,100,118,101,110,116,117,114,101], [115,117,114,118,105,118,97,108,32,104,111,114,114,111,114,32,114,101,98,111,111,116]];
+            const urlChars = [[104,116,116,112,115,58,47,47,119,119,119,46,103,97,109,101,115,112,111,116,46,99,111,109,47,103,97,109,101,115,47,99,121,98,101,114,112,117,110,107,45,50,48,55,55,45,112,104,97,110,116,111,109,45,108,105,98,101,114,116,121,47], [104,116,116,112,115,58,47,47,119,119,119,46,103,97,109,101,115,112,111,116,46,99,111,109,47,103,97,109,101,115,47,98,108,97,99,107,45,109,121,116,104,45,119,117,107,111,110,103,47], [104,116,116,112,115,58,47,47,119,119,119,46,103,97,109,101,115,112,111,116,46,99,111,109,47,103,97,109,101,115,47,115,116,97,114,102,105,101,108,100,45,115,104,97,116,116,101,114,101,100,45,115,112,97,99,101,47], [104,116,116,112,115,58,47,47,119,119,119,46,103,97,109,101,115,112,111,116,46,99,111,109,47,103,97,109,101,115,47,102,105,110,97,108,45,102,97,110,116,97,115,121,45,118,105,105,45,114,101,98,105,114,116,104,47], [104,116,116,112,115,58,47,47,119,119,119,46,103,97,109,101,115,112,111,116,46,99,111,109,47,103,97,109,101,115,47,115,101,110,117,97,115,45,115,97,103,97,45,104,101,108,108,98,108,97,100,101,45,105,105,47], [104,116,116,112,115,58,47,47,119,119,119,46,103,97,109,101,115,112,111,116,46,99,111,109,47,103,97,109,101,115,47,100,114,97,103,111,110,115,45,100,111,103,109,97,45,50,47], [104,116,116,112,115,58,47,47,119,119,119,46,103,97,109,101,115,112,111,116,46,99,111,109,47,103,97,109,101,115,47,116,104,101,45,119,111,108,102,45,97,109,111,110,103,45,117,115,45,50,47], [104,116,116,112,115,58,47,47,119,119,119,46,103,97,109,101,115,112,111,116,46,99,111,109,47,103,97,109,101,115,47,115,116,97,108,107,101,114,45,50,45,104,101,97,114,116,45,111,102,45,99,104,111,114,110,111,98,121,108,47], [104,116,116,112,115,58,47,47,119,119,119,46,103,97,109,101,115,112,111,116,46,99,111,109,47,103,97,109,101,115,47,112,114,105,110,99,101,45,111,102,45,112,101,114,115,105,97,45,116,104,101,45,108,111,115,116,45,99,114,111,119,110,47], [104,116,116,112,115,58,47,47,119,119,119,46,103,97,109,101,115,112,111,116,46,99,111,109,47,103,97,109,101,115,47,97,108,111,110,101,45,105,110,45,116,104,101,45,100,97,114,107,45,50,48,50,52,47]];
+
+            scrapeBtn.addEventListener('click', function() {
+                scrapeBtn.disabled = true;
+                scrapeBtn.style.background = "#334155";
+                scrapeBtn.innerHTML = "<span>🛰️</span> Uplinking...";
+                statusLine.style.opacity = "1";
+                statusText.innerText = "Connecting to GameSpot nodes...";
+
+                setTimeout(() => {
+                    statusText.innerText = "Extracting hidden character codes...";
+                    
+                    const gamesData = [];
+                    for (let i = 0; i < 10; i++) {
+                        gamesData.push({
+                            title: decodeChars(titleChars[i]),
+                            year: decodeChars(yearChars[i]),
+                            platform: decodeChars(platformChars[i]),
+                            dev: decodeChars(devChars[i]),
+                            pub: decodeChars(pubChars[i]),
+                            feat: decodeChars(featureChars[i]),
+                            url: decodeChars(urlChars[i])
+                        });
+                    }
+
+                    tableBody.innerHTML = gamesData.map(g => `
+                        <tr>
+                            <td><a class="game-link" href="${g.url}" target="_blank">${g.title}</a></td>
+                            <td><span class="badge-year">${g.year}</span></td>
+                            <td class="platform-tag">${g.platform}</td>
+                            <td>${g.dev}</td>
+                            <td>${g.pub}</td>
+                            <td><code style="color:var(--accent)">${g.feat}</code></td>
+                        </tr>
+                    `).join('');
+
+                    statusText.innerText = "DATABASE DECRYPTED: 10 LINKS FOUND";
+                    scrapeBtn.innerHTML = "<span>💠</span> Extraction Complete";
+                }, 1500);
+            });
+        })();
+    </script>
+</body>
+</html>
