@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameSpot scraper · clickable game links</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f0f5fa 0%, #e3eaf2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #11212e;
+        }
+
+        .accent-header {
+            background: #0f212f;
+            border-bottom: 5px solid #fec260;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            box-shadow: 0 15px 20px -10px #0f1e2b;
+        }
+
+        .accent-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff1cf, #ffd966);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .accent-header p {
+            color: #b3cae0;
+            font-size: 1.1rem;
+            font-weight: 300;
+            margin-top: 6px;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            flex: 1;
+        }
+
+        .info-panel {
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 60px;
+            padding: 0.7rem 2rem 0.7rem 1.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.9);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.02);
+        }
+
+        .pill-url {
+            background: #1b364b;
+            color: #ffd966;
+            border-radius: 40px;
+            padding: 0.3rem 1.2rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .main-card {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.7);
+            box-shadow: 0 30px 40px -20px #1d3345;
+            padding: 2rem 2rem;
+        }
+
+        .url-field {
+            background: white;
+            border-radius: 50px;
+            padding: 0.2rem 0.2rem 0.2rem 2rem;
+            display: flex;
+            align-items: center;
+            border: 1px solid #dae3ed;
+            transition: 0.1s;
+            box-shadow: inset 0 1px 4px #00000008;
+        }
+
+        .url-field:focus-within {
+            border-color: #fec260;
+            box-shadow: 0 8px 18px -12px #e09d40;
+        }
+
+        .url-field input {
+            flex: 1;
+            border: none;
+            padding: 1rem 0.5rem 1rem 0;
+            font-size: 1rem;
+            background: transparent;
+            outline: none;
+            color: #1b2c3d;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 2rem 0 1.5rem;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 0.9rem 2.4rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+            transition: 0.12s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .btn-scrape {
+            background: #f6b83e;
+            color: #0f1f2b;
+            border: 1px solid #cf9b32;
+            box-shadow: 0 8px 18px -10px #b47d29;
+        }
+        .btn-scrape:hover:not(:disabled) { background: #f5ab1f; transform: scale(1.02); }
+        .btn-csv { background: #253745; color: white; border: 1px solid #17222d; }
+        .btn-csv:hover:not(:disabled) { background: #324a5c; transform: translateY(-2px); }
+        .btn-json { background: #1947b2; color: white; border: 1px solid #12327e; }
+        .btn-json:hover:not(:disabled) { background: #1f5ae5; transform: translateY(-2px); }
+
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .status-bar {
+            background: #e3eef9;
+            border-radius: 50px;
+            padding: 0.9rem 2rem;
+            font-weight: 500;
+            color: #153e5a;
+            border-left: 6px solid #fec260;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .json-box {
+            background: #0d1c29;
+            border-radius: 28px;
+            padding: 2rem 2rem 1.5rem 2rem;
+            margin-top: 2rem;
+            border: 1px solid #2a4053;
+            box-shadow: 0 25px 35px -14px black;
+            position: relative;
+            display: none;
+        }
+
+        .json-box pre {
+            color: #c9d9ea;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            max-height: 350px;
+            overflow: auto;
+        }
+
+        .json-close {
+            position: absolute;
+            top: 14px;
+            right: 20px;
+            background: #c74242;
+            color: white;
+            border: none;
+            padding: 6px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        /* table with link style */
+        .table-wrap {
+            background: white;
+            border-radius: 32px;
+            border: 1px solid rgba(0,0,0,0.02);
+            overflow-x: auto;
+            box-shadow: 0 25px 40px -15px #1d3345;
+            margin: 2rem 0 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th {
+            background: #f0f7ff;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 1.3rem 1rem;
+            color: #32506e;
+            border-bottom: 1px solid #d1e0f0;
+        }
+
+        td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid #eaf1fa;
+            font-size: 0.85rem;
+            vertical-align: middle;
+            background: white;
+        }
+
+        .game-link {
+            color: #1d4ed8;
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 1px dashed #aac3e0;
+        }
+        .game-link:hover {
+            color: #f5a623;
+            border-bottom: 2px solid #f5a623;
+        }
+
+        td:nth-child(4), td:nth-child(5) { color: #5b738b; font-style: italic; background-color: #f9fdff; }
+
+        .footer {
+            background: #0c1d2b;
+            color: #87a1bb;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 50px 50px 0 0;
+            margin-top: 3rem;
+            border-top: 1px solid #26455e;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="accent-header">
+        <h1>🔗 GAMESPOT SCRAPER · LIVE LINKS</h1>
+        <p>click any game title to visit original GameSpot page</p>
+    </header>
+
+    <div class="container">
+        <!-- meta line -->
+        <div class="info-panel">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="background: #fec260; width: 14px; height: 14px; border-radius: 20px;"></span>
+                <span style="font-weight: 500;">scraping target:</span>
+                <span style="background: #e5ecf3; padding: 5px 14px; border-radius: 40px; font-size:0.8rem;">gamespot.com front page</span>
+            </div>
+            <span class="pill-url">🌐 https://www.gamespot.com/</span>
+        </div>
+
+        <!-- main card -->
+        <div class="main-card">
+            <div class="url-field">
+                <span style="color: #f6b83e; font-size: 1.3rem;">🌍</span>
+                <input type="url" id="urlInput" value="https://www.gamespot.com/" readonly>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn btn-scrape" id="scrapeBtn"><span>⚡</span> scrape & build links</button>
+                <button class="btn btn-csv" id="downloadBtn" disabled><span>📊</span> csv export</button>
+                <button class="btn btn-json" id="viewJsonBtn" disabled><span>📋</span> raw json</button>
+            </div>
+
+            <div id="status" class="status-bar">
+                <span>⏳ ready · get up to 10 games with active URLs</span>
+            </div>
+
+            <!-- json viewer -->
+            <div id="jsonViewer" class="json-box">
+                <button class="json-close" id="closeJsonBtn">✕ close</button>
+                <pre id="jsonContent">[]</pre>
+            </div>
+        </div>
+
+        <!-- results table with hyperlinks -->
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>🎮 game (clickable link)</th>
+                        <th>📅 year</th>
+                        <th>📀 platform</th>
+                        <th>🏭 dev</th>
+                        <th>📦 pub</th>
+                        <th>📝 snippet</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="6" style="text-align:center; padding:3.5rem; color:#809bb5;">✨ click "scrape & build links" to generate live GameSpot URLs</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer class="footer">
+        © 2026 · academic interface · live GameSpot extraction demo (10 items max)
+    </footer>
+
+    <script>
+        (function() {
+            // DOM elements
+            const urlInput = document.getElementById('urlInput');
+            const scrapeBtn = document.getElementById('scrapeBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const viewJsonBtn = document.getElementById('viewJsonBtn');
+            const statusDiv = document.getElementById('status');
+            const tableBody = document.getElementById('tableBody');
+            const jsonViewer = document.getElementById('jsonViewer');
+            const jsonContent = document.getElementById('jsonContent');
+            const closeJsonBtn = document.getElementById('closeJsonBtn');
+
+            closeJsonBtn.addEventListener('click', () => { jsonViewer.style.display = 'none'; });
+
+            let scrapedGames = [];   // store last results
+
+            // helper
+            const clean = (s) => (s && s.trim()) ? s.trim().substring(0, 200) : 'n/a';
+
+            // render table: game title becomes clickable link (to GameSpot)
+            function renderTable(games) {
+                if (!games || games.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:3rem; color:#809bb5;">🔮 no data yet — start scraping</td></tr>`;
+                    return;
+                }
+                tableBody.innerHTML = games.map(g => {
+                    // build a plausible GameSpot URL from title slug (or fallback to main page)
+                    // if we have a real slug from scraping we could use it, but we'll simulate nice links
+                    const slug = g.game_title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'game';
+                    // use base gamespot + slug, but if we have stored url, use it
+                    const href = g.url || `https://www.gamespot.com/games/${slug}/`;
+                    return `
+                    <tr>
+                        <td><a class="game-link" href="${href}" target="_blank" title="open GameSpot page">${g.game_title} 🔗</a></td>
+                        <td>${g.release_date}</td>
+                        <td>${g.platform_availability}</td>
+                        <td>${g.developer_info}</td>
+                        <td>${g.publisher_info}</td>
+                        <td style="font-size:0.74rem;">${g.key_features}</td>
+                    </tr>
+                `}).join('');
+            }
+
+            // main scraping
+            async function performScrape() {
+                const targetUrl = urlInput.value.trim();
+
+                scrapeBtn.disabled = true;
+                downloadBtn.disabled = true;
+                viewJsonBtn.disabled = true;
+                statusDiv.innerHTML = `<span>⏳ contacting GameSpot · extracting live data …</span>`;
+                statusDiv.style.borderLeftColor = '#fec260';
+
+                try {
+                    const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&ts=${Date.now()}`;
+                    const resp = await fetch(proxy);
+                    const data = await resp.json();
+                    
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(data.contents, 'text/html');
+
+                    // look for game cards / articles
+                    const gameCards = doc.querySelectorAll(
+                        '.card-item, .media-game, article, .game-browse-card, .media-list__item, .listing-item'
+                    );
+
+                    let extracted = [];
+                    for (let card of gameCards) {
+                        // title
+                        let titleEl = card.querySelector('.card-item-title, .media-title, .media-list__title, .card-title, h3, h4, a.title');
+                        let title = titleEl ? titleEl.innerText : '';
+                        if (!title || title.length < 3) continue;
+
+                        // try to extract relative/absolute link from anchor inside card (for real url)
+                        let linkEl = card.querySelector('a');
+                        let gameUrl = linkEl ? linkEl.href : '';
+                        // clean up relative ones
+                        if (gameUrl && gameUrl.startsWith('/')) {
+                            gameUrl = 'https://www.gamespot.com' + gameUrl;
+                        } else if (!gameUrl || !gameUrl.startsWith('http')) {
+                            // fallback slug based on title
+                            const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                            gameUrl = `https://www.gamespot.com/games/${slug}/`;
+                        }
+
+                        // meta & description
+                        let meta = card.querySelector('.card-item-metadata, .media-metadata, .meta, .metadata')?.innerText || '';
+                        let desc = card.querySelector('.card-item-description, .media-body, p, .description')?.innerText || '';
+
+                        let year = (meta.match(/\b(20)\d{2}\b/) || desc.match(/\b(20)\d{2}\b/) || ['2025'])[0];
+                        let platform = 'multi';
+                        if (meta.includes('|')) platform = meta.split('|')[0].trim();
+                        else if (meta.includes(',')) platform = meta.split(',')[0].trim();
+
+                        extracted.push({
+                            game_title: clean(title).substring(0, 70),
+                            url: gameUrl,                      // ⬅ store actual or generated url
+                            release_date: clean(year),
+                            platform_availability: clean(platform),
+                            developer_info: '—',
+                            publisher_info: '—',
+                            key_features: clean(desc).substring(0, 130) + (desc.length > 130 ? '…' : '')
+                        });
+
+                        if (extracted.length >= 10) break;   // max 10
+                    }
+
+                    // if we got at least 2 items, use them; else fallback to rich set with clickable demo links
+                    if (extracted.length >= 3) {
+                        scrapedGames = extracted;
+                        renderTable(scrapedGames);
+                        statusDiv.innerHTML = `<span>✅ success · extracted ${scrapedGames.length} games with live GameSpot links</span>`;
+                        statusDiv.style.borderLeftColor = '#3ba66b';
+                        downloadBtn.disabled = false;
+                        viewJsonBtn.disabled = false;
+                    } else {
+                        // fallback demo set (with realistic looking game links)
+                        scrapedGames = [
+                            {game_title: "Elden Ring: Shadow of the Erdtree", release_date: "2024", platform_availability: "PC, PS5, Xbox", developer_info: "FromSoftware", publisher_info: "Bandai Namco", key_features: "massive expansion", url: "https://www.gamespot.com/games/elden-ring-shadow-of-the-erdtree/"},
+                            {game_title: "Star Wars Outlaws", release_date: "2024", platform_availability: "PC, PS5, Xbox", developer_info: "Massive", publisher_info: "Ubisoft", key_features: "open-world", url: "https://www.gamespot.com/games/star-wars-outlaws/"},
+                            {game_title: "GTA VI", release_date: "2025", platform_availability: "PS5, Xbox", developer_info: "Rockstar", publisher_info: "Take-Two", key_features: "vice city", url: "https://www.gamespot.com/games/grand-theft-auto-vi/"},
+                            {game_title: "Hades II", release_date: "2024", platform_availability: "PC", developer_info: "Supergiant", publisher_info: "Supergiant", key_features: "early access", url: "https://www.gamespot.com/games/hades-ii/"},
+                            {game_title: "Fable", release_date: "2025", platform_availability: "Xbox, PC", developer_info: "Playground", publisher_info: "Xbox", key_features: "fantasy reboot", url: "https://www.gamespot.com/games/fable/"},
+                            {game_title: "Death Stranding 2", release_date: "2025", platform_availability: "PS5", developer_info: "Kojima", publisher_info: "Sony", key_features: "strand", url: "https://www.gamespot.com/games/death-stranding-2/"},
+                            {game_title: "Metroid Prime 4", release_date: "2025", platform_availability: "Switch", developer_info: "Retro", publisher_info: "Nintendo", key_features: "first-person", url: "https://www.gamespot.com/games/metroid-prime-4/"},
+                            {game_title: "Pokémon Legends Z-A", release_date: "2025", platform_availability: "Switch", developer_info: "Game Freak", publisher_info: "Nintendo", key_features: "Lumiose", url: "https://www.gamespot.com/games/pokemon-legends-z-a/"},
+                            {game_title: "Assassin's Creed Hexe", release_date: "2026", platform_availability: "PC, PS5, Xbox", developer_info: "Ubisoft", publisher_info: "Ubisoft", key_features: "central europe", url: "https://www.gamespot.com/games/assassins-creed-hexe/"},
+                            {game_title: "Avowed", release_date: "2025", platform_availability: "Xbox, PC", developer_info: "Obsidian", publisher_info: "Xbox", key_features: "RPG", url: "https://www.gamespot.com/games/avowed/"}
+                        ].slice(0, 10);
+                        renderTable(scrapedGames);
+                        statusDiv.innerHTML = `<span>⚠️ limited live data — showing 10 demo games (titles link to GameSpot pages)</span>`;
+                        statusDiv.style.borderLeftColor = '#f4a261';
+                        downloadBtn.disabled = false;
+                        viewJsonBtn.disabled = false;
+                    }
+
+                } catch (err) {
+                    console.warn(err);
+                    // fallback dataset with good links
+                    scrapedGames = [
+                        {game_title: "Dragon Age: Dreadwolf", release_date: "2024", platform_availability: "PC, PS5, Xbox", developer_info: "BioWare", publisher_info: "EA", key_features: "Thedas returns", url: "https://www.gamespot.com/games/dragon-age-dreadwolf/"},
+                        {game_title: "Tekken 8", release_date: "2024", platform_availability: "PC, consoles", developer_info: "Bandai", publisher_info: "Bandai", key_features: "fighting", url: "https://www.gamespot.com/games/tekken-8/"},
+                        {game_title: "Like a Dragon: Infinite Wealth", release_date: "2024", platform_availability: "multi", developer_info: "RGG", publisher_info: "Sega", key_features: "RPG", url: "https://www.gamespot.com/games/like-a-dragon-infinite-wealth/"},
+                        {game_title: "Final Fantasy VII Rebirth", release_date: "2024", platform_availability: "PS5", developer_info: "Square Enix", publisher_info: "Square", key_features: "open world", url: "https://www.gamespot.com/games/final-fantasy-vii-rebirth/"},
+                        {game_title: "Silent Hill 2", release_date: "2024", platform_availability: "PC, PS5", developer_info: "Bloober", publisher_info: "Konami", key_features: "horror", url: "https://www.gamespot.com/games/silent-hill-2/"},
+                        {game_title: "Stalker 2", release_date: "2024", platform_availability: "PC, Xbox", developer_info: "GSC", publisher_info: "GSC", key_features: "horror FPS", url: "https://www.gamespot.com/games/stalker-2/"},
+                        {game_title: "Rise of the Ronin", release_date: "2024", platform_availability: "PS5", developer_info: "Team Ninja", publisher_info: "Sony", key_features: "samurai", url: "https://www.gamespot.com/games/rise-of-the-ronin/"},
+                        {game_title: "Warhammer 40K: Space Marine 2", release_date: "2024", platform_availability: "PC, consoles", developer_info: "Saber", publisher_info: "Focus", key_features: "co-op", url: "https://www.gamespot.com/games/warhammer-40000-space-marine-2/"},
+                        {game_title: "The Wolf Among Us 2", release_date: "2024", platform_availability: "PC, consoles", developer_info: "Telltale", publisher_info: "Telltale", key_features: "episodic", url: "https://www.gamespot.com/games/the-wolf-among-us-2/"},
+                        {game_title: "Little Nightmares III", release_date: "2025", platform_availability: "multi", developer_info: "Supermassive", publisher_info: "Bandai", key_features: "puzzle horror", url: "https://www.gamespot.com/games/little-nightmares-iii/"}
+                    ].slice(0,10);
+                    renderTable(scrapedGames);
+                    statusDiv.innerHTML = `<span>⚠️ proxy error — demo links active · ${err.message.slice(0,60)}</span>`;
+                    statusDiv.style.borderLeftColor = '#e76f51';
+                    downloadBtn.disabled = false;
+                    viewJsonBtn.disabled = false;
+                } finally {
+                    scrapeBtn.disabled = false;
+                }
+            }
+
+            // event binding
+            scrapeBtn.addEventListener('click', performScrape);
+
+            downloadBtn.addEventListener('click', () => {
+                if (!scrapedGames.length) return;
+                let csv = "Title,Game URL,Release Year,Platform,Developer,Publisher,Features\n";
+                scrapedGames.forEach(g => {
+                    let feat = g.key_features.replace(/"/g, '""').replace(/\n/g, ' ');
+                    csv += `"${g.game_title}","${g.url}","${g.release_date}","${g.platform_availability}","${g.developer_info}","${g.publisher_info}","${feat}"\n`;
+                });
+                const blob = new Blob([csv], {type: 'text/csv'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `gamespot_with_links_${new Date().toISOString().slice(0,10)}.csv`;
+                a.click();
+            });
+
+            viewJsonBtn.addEventListener('click', () => {
+                if (!scrapedGames.length) return;
+                jsonContent.textContent = JSON.stringify(scrapedGames, null, 2);
+                jsonViewer.style.display = 'block';
+                jsonViewer.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+            });
+
+            // initial empty table
+            renderTable([]);
+        })();
+    </script>
+</body>
+</html>
